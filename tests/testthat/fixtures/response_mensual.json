@@ -1,0 +1,25 @@
+{
+  "Series": {
+    "FREQ": ["6"],
+    "INDICATOR": ["216064"],
+    "OBSERVATIONS": [
+      [
+        {
+          "TIME_PERIOD": "2023/01",
+          "OBS_VALUE": "7.91",
+          "OBS_NOTE": ""
+        },
+        {
+          "TIME_PERIOD": "2023/02",
+          "OBS_VALUE": "7.62",
+          "OBS_NOTE": ""
+        },
+        {
+          "TIME_PERIOD": "2023/03",
+          "OBS_VALUE": "6.85",
+          "OBS_NOTE": ""
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "Series": {
+    "FREQ": ["3"],
+    "INDICATOR": ["381016"],
+    "OBSERVATIONS": [
+      [
+        {
+          "TIME_PERIOD": "2022/Q1",
+          "OBS_VALUE": "22654321",
+          "OBS_NOTE": ""
+        },
+        {
+          "TIME_PERIOD": "2022/Q2",
+          "OBS_VALUE": "23100000",
+          "OBS_NOTE": ""
+        },
+        {
+          "TIME_PERIOD": "2022/Q3",
+          "OBS_VALUE": "23500000",
+          "OBS_NOTE": ""
+        }
+      ]
+    ]
+  }
+}

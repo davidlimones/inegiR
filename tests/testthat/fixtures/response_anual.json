@@ -1,0 +1,20 @@
+{
+  "Series": {
+    "FREQ": ["1"],
+    "INDICATOR": ["999999"],
+    "OBSERVATIONS": [
+      [
+        {
+          "TIME_PERIOD": "2020",
+          "OBS_VALUE": "100.0",
+          "OBS_NOTE": ""
+        },
+        {
+          "TIME_PERIOD": "2021",
+          "OBS_VALUE": "104.5",
+          "OBS_NOTE": ""
+        }
+      ]
+    ]
+  }
+}

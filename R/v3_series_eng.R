@@ -1,208 +1,132 @@
 #' Returns INEGI data series
 #'
-#' Returns a data.frame with the time series chosen from INEGI webservice. If the parameter Metadata is TRUE, a list is returned with two objects: data and metadata. 
+#' Returns a data.frame with the time series chosen from INEGI webservice.
+#' If the parameter Metadata is TRUE, a list is returned with two objects:
+#' data and metadata.
 #'
-#' @param series_id an indicator ID. These are obtained via the INEGI API documentation.
+#' @param series_id an indicator ID from INEGI API documentation.
 #' @param token API token supplied by INEGI.
-#' @param geography Geography code of INEGI. Defaults to 00 (National)
-#' @param database Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores)? Defaults to BIE. To learn more about what database your indicator is stored in, visit INEGI docs.
-#' @param metadata Defaults to FALSE, if TRUE, returns a list with metadata information.
-#' @param lastonly Do you want only the last observation? Defaults to FALSE.
-#' @param as_tt Do you want the output of the data.frame to be a tibble time object? Defaults to FALSE.
-#' @param as_compact Do you want the output always as a data.frame or time tibble? If the output contains metadata, each data point will be replicated in a column. If the output does not contain metadata there is no change. Previously, this was achieved with \code{compact_inegi_series}.
-#' 
-#' @note Adding the entire INEGI URL as a series is deprecated since v3, due to a change of API specifications in INEGI. INEGI docs can be found at: \url{https://www.inegi.org.mx/servicios/api_indicadores.html}. Coercing biweekly indicators to monthly is also deprecated inside this function. Use tibbletime functions to coerce instead.
-#' 
+#' @param geography Geography code. Defaults to "00" (National).
+#' @param database "BIE" or "BISE". Defaults to "BIE".
+#' @param metadata If TRUE, returns list with data and metadata.
+#' @param lastonly If TRUE, returns only last observation.
+#' @param as_tt If TRUE, returns tibble time object.
+#' @param as_compact If TRUE, returns compact data.frame.
 #' @return data.frame or list
-#'
-#' @author Eduardo Flores 
-#' 
-#' @importFrom zoo as.yearmon
-#' @importFrom zoo as.Date
-#' @importFrom plyr ldply
-#' @importFrom tibbletime as_tbl_time
-#' @importFrom lubridate month
+#' @importFrom jsonlite fromJSON
+#' @importFrom lubridate ymd
+#' @importFrom dplyr bind_rows
 #' @examples
 #' \dontrun{
-#' # General INPC series
 #' token <- "webservice_token"
-#' inpc_id <- "216064"
-#' INPC <- inegi_series(inpc_id, token)
+#' INPC <- inegi_series("216064", token)
 #' }
-#' @name inegi_series
-NULL
-
 #' @export
-#' @rdname inegi_series
-inegi_series <- function (series_id, token, geography = "00", database = "BIE",
-                          metadata = FALSE, lastonly = FALSE, as_tt = FALSE, as_compact = FALSE)
-{
-  #### stoping mistakes from previous version breaks
-  if(grepl(pattern = "[0-9]", x = series_id, ignore.case = TRUE)){}else{
-    stop("Series id must only be numbers. Adding the entire URL is deprecated in v3. See documentation.")}
-  
-  #### Creating the url we are going to call. 
-  u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/INDICATOR/",
-              series_id, 
-              "/en/", 
-              geography, "/", 
-              ifelse(lastonly, "true", "false"), 
-              "/", database, "/2.0/", 
-              token, 
-              "?type=json")
-  
-  ### download 
-  s <- jsonlite::fromJSON(u)
-  if (!is.null(s$ErrorInfo)) {
-    warning(paste0("INEGI error: ", s$ErrorInfo))
-    return(NULL)
-  }
-  d <- as.data.frame(s$Series$OBSERVATIONS)
-  
-  #### Dates will have to be fixed, according to frequency.
-  #### These frequency codes are obtained by incat_freq(), they might change if inegi decides to change them!
-  if (grepl("1", s$Series$FREQ, fixed=TRUE) || grepl("2", s$Series$FREQ, fixed=TRUE)
-      || grepl("3", s$Series$FREQ, fixed=TRUE)) {
-    
-    d_dates <- gsub(pattern = "/[0-9]{2,5}", replacement = "",
-                    x = d$TIME_PERIOD)
-    d_aux <- rep(x = "Year", times = length(d$TIME_PERIOD))
-  }
-  else {
-    if (grepl("6", s$Series$FREQ, fixed=TRUE)) {
-      d_dates <- gsub(pattern = "/04", replacement = "/10", x = d$TIME_PERIOD)
-      d_dates <- gsub(pattern = "/03", replacement = "/07", x = d_dates)
-      d_dates <- gsub(pattern = "/02", replacement = "/04", x = d_dates)
-      d_aux <- ifelse(grepl(pattern = "/10", x = d_dates), 
-                      "Q4", ifelse(grepl(pattern = "/07", x = d_dates),
-                                   "Q3", ifelse(grepl(pattern = "/04", x = d_dates),
-                                                "Q2", "Q1")))
-      d_dates <- as.Date(zoo::as.yearmon(d_dates, "%Y/%m"))
-    }
-    else {
-      if (grepl("8", s$Series$FREQ, fixed=TRUE)) {
-        d_dates <- as.Date(zoo::as.yearmon(d$TIME_PERIOD,"%Y/%m"))
-        d_aux <- paste0("M", lubridate::month(d_dates))
+inegi_series <- function(series_id,
+                         token,
+                         geography  = "00",
+                         database   = "BIE",
+                         metadata   = FALSE,
+                         lastonly   = FALSE,
+                         as_tt      = FALSE,
+                         as_compact = FALSE) {
+  url <- paste0(
+    "https://www.inegi.org.mx/app/api/indicadores/desarrolladores/",
+    "jsonxml/INDICATOR/", series_id, "/es/", geography, "/false/",
+    database, "/2.0/", token, "?type=json"
+  )
+  resp <- tryCatch(
+    jsonlite::fromJSON(url),
+    error = function(e) stop("Error al conectar con la API de INEGI: ", e$message)
+  )
+  series_data <- resp$Series
+  if (is.null(series_data)) stop("La serie ", series_id, " no devolvio datos.")
+  d       <- series_data$OBSERVATIONS[[1]]
+  meta_df <- series_data[, !names(series_data) %in% "OBSERVATIONS"]
+  freq    <- as.integer(meta_df$FREQ)
+  raw_dates <- d$TIME_PERIOD
+  d_dates <- tryCatch({
+    if (freq == 1) {
+      # Anual: "2020"
+      as.Date(paste0(raw_dates, "-01-01"))
+    } else if (freq == 3) {
+      # Trimestral: "2020/Q1"
+      parts   <- strsplit(raw_dates, "/Q")
+      anos    <- as.integer(sapply(parts, `[`, 1))
+      trimest <- as.integer(sapply(parts, `[`, 2))
+      as.Date(paste0(anos, "-", sprintf("%02d", (trimest - 1) * 3 + 1), "-01"))
+    } else if (freq %in% c(6, 12)) {
+      # Mensual o bimestral: "2020/01"
+      lubridate::ymd(paste0(gsub("/", "-", raw_dates), "-01"))
+    } else {
+      # Frecuencia no reconocida: intento generico con fallback a NA
+      warning("Frecuencia no reconocida (", freq,
+              "). Intentando parseo generico.")
+      result <- suppressWarnings(lubridate::ymd(raw_dates))
+      if (all(is.na(result))) {
+        warning("No se pudo parsear la fecha. Se devuelve NA.")
       }
-      else {
-        if (grepl("9", s$Series$FREQ, fixed=TRUE)) {
-          d_dates <- as.Date(zoo::as.yearmon(d$TIME_PERIOD,"%Y/%m"))
-          d_aux <- 1:length(d$TIME_PERIOD)
-          warning("Biweekly data is NOT coerced or forced to a date. Instead, the date_shortcut column is an index of the order of observations (larger N with same date is second half of month).")
-        }
-        else {
-          if (grepl("4", s$Series$FREQ, fixed=TRUE) ||
-              grepl("5", s$Series$FREQ, fixed=TRUE) ||
-              grepl("7", s$Series$FREQ, fixed=TRUE) ||
-              grepl("10", s$Series$FREQ, fixed=TRUE) ||
-              grepl("11", s$Series$FREQ, fixed=TRUE) ||
-              grepl("12", s$Series$FREQ, fixed=TRUE) ||
-              grepl("13", s$Series$FREQ, fixed=TRUE)) {
-            warning("Time format is not supported. Only Anual, Trimestral, Monthly or Biweekly indicators are supported by this package. Data was downloaded but will be passed on as-is.")
-          }
-        }
-      }
+      result
     }
+  }, error = function(e) {
+    warning("Error al parsear fechas: ", e$message, ". Se devuelve NA.")
+    rep(as.Date(NA), length(raw_dates))
+  })
+  d_aux <- raw_dates
+  if (lastonly) {
+    d       <- d[nrow(d), , drop = FALSE]
+    d_dates <- d_dates[length(d_dates)]
+    d_aux   <- d_aux[length(d_aux)]
   }
-  data <- data.frame(date = d_dates, date_shortcut = d_aux,
-                     values = as.numeric(d$OBS_VALUE), notes = d$OBS_NOTE)
-  if (as_tt) {
-    data <- as_tbl_time(x = data, index = "date")
-  }
+  result_df <- data.frame(
+    date          = d_dates,
+    date_shortcut = d_aux,
+    values        = suppressWarnings(as.numeric(d$OBS_VALUE)),
+    notes         = d$OBS_NOTE,
+    stringsAsFactors = FALSE
+  )
   if (metadata) {
-    warning("Metadata will be passed as-is. Use incat_ functions to download catalogs.")
-    metadata <- data.frame(source = s$Series$SOURCE, 
-                           topic = s$Series$TOPIC,
-                           notes = s$Series$NOTE, 
-                           last_update = s$Series$LASTUPDATE,
-                           region = geography, 
-                           units = s$Series$UNIT, 
-                           indicator_ID = s$Series$INDICADOR,
-                           frequency = s$Series$FREQ, 
-                           call_local_time = Sys.time(),
-                           call_unmasked = u)
-    if (as_compact) {
-      data$meta_source <- metadata$source[1]
-      data$meta_topic <- metadata$topic[1]
-      data$meta_notes <- metadata$notes[1]
-      data$meta_lastupdate <- metadata$last_update[1]
-      data$meta_region <- metadata$region[1]
-      data$meta_units <- metadata$units[1]
-      data$meta_indicatorid <- metadata$indicator_ID[1]
-      data$meta_frequency <- metadata$frequency[1]
-      data$meta_calltime <- metadata$call_local_time[1]
-      data$meta_call <- u
-      return(data)
-    }
-    else {
-      l <- list(metadata = metadata, data = data)
-      return(l)
-    }
+    return(list(data = result_df, metadata = meta_df))
   }
-  else {
-    return(data)
-  }
+  result_df
 }
 #' Returns multiple INEGI data series
 #'
-#' Returns a data.frame with multiple time series chosen from INEGI webservice. The output will always be a data.frame (not tibble) with compacted metadata. (See \code{inegi_series} to understand as_tt = FALSE and as_compact = TRUE).
-#'
-#' @param series_id A vector of indicator ID's. These are obtained via the INEGI API documentation.
+#' @param series_id Vector of indicator IDs.
 #' @param token API token supplied by INEGI.
-#' @param names Optional vector of names to assign to each id. If NULL, a numerical index is assigned.
-#' @param geography Geography code of INEGI. Defaults to 00 (National)
-#' @param database Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores). Defaults to BIE. To learn more about what database your indicator is stored in, visit INEGI docs.
-#' 
-#' 
-#' @note Adding the entire INEGI URL as a series is deprecated since v3, due to a change of API specifications in INEGI. INEGI docs can be found at: \url{https://www.inegi.org.mx/servicios/api_indicadores.html}. Coercing biweekly indicators to monthly is also deprecated inside this function. Use tibbletime functions to coerce instead.
-#' 
-#' @return data.frame 
-#'
-#' @author Eduardo Flores 
-#' 
-#' @importFrom zoo as.yearmon
-#' @importFrom zoo as.Date
-#' @importFrom plyr ldply
-#' @importFrom tibbletime as_tbl_time
-#' @importFrom lubridate month
+#' @param names Optional vector of names for each series.
+#' @param geography Geography code. Defaults to "00".
+#' @param database "BIE" or "BISE". Defaults to "BIE".
+#' @return data.frame
 #' @examples
 #' \dontrun{
-#' # General INPC series
 #' token <- "webservice_token"
-#' some_series <- c("216064", "216097")
-#' result <- inegi_series_multiple(some_series, token)
+#' ids   <- c("216064", "381016", "444952")
+#' datos <- inegi_series_multiple(ids, token,
+#'            names = c("INPC", "PIB", "Desocupacion"))
 #' }
-#' @name inegi_series_multiple
-NULL
-
 #' @export
-#' @rdname inegi_series_multiple
-inegi_series_multiple <- function(series_id, token, names = NULL, geography = "00", database = "BIE"){
-  if(is.null(names)){
-    index <- 1:length(series_id)
-  }else{
-    if(length(names) == length(series_id)){
-      index <- names
-    }else{
-      stop("Names and series_id vectors must be same length")
-    }
+inegi_series_multiple <- function(series_id,
+                                  token,
+                                  names     = NULL,
+                                  geography = "00",
+                                  database  = "BIE") {
+  if (length(series_id) == 0) stop("series_id esta vacio.")
+  labels <- if (!is.null(names) && length(names) == length(series_id)) {
+    names
+  } else {
+    series_id
   }
-  
-  d <- NULL
-  for(i in 1:length(series_id)){
-    suppressWarnings(
-   tmp <- inegiR::inegi_series(series_id = series_id[i], 
-                               token = token,
-                               geography = geography,
-                               database = database, 
-                               metadata = TRUE, 
-                               lastonly = FALSE, 
-                               as_tt = FALSE, 
-                               as_compact = TRUE)
-    )
-    tmp$index_name <- index[i]
-    
-   d <- rbind.data.frame(tmp, d)
+  resultados <- vector("list", length(series_id))
+  for (i in seq_along(series_id)) {
+    resultados[[i]] <- tryCatch({
+      df        <- inegi_series(series_id[i], token, geography, database)
+      df$series <- labels[i]
+      df
+    }, error = function(e) {
+      warning("Error en serie ", series_id[i], ": ", e$message)
+      NULL
+    })
   }
-  d
+  dplyr::bind_rows(resultados)
 }
