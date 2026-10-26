@@ -32,12 +32,12 @@ NULL
 incat_freq <- function(token, id = NULL){
 
   if(is.null(id)){
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_FREQ/null/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_FREQ/null/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("frequency", "frequency_description")
     s$CODE
   }else{
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_FREQ/",id,"/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_FREQ/",id,"/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("frequency", "frequency_description")
     s$CODE
@@ -47,12 +47,12 @@ incat_freq <- function(token, id = NULL){
 #' @rdname incat_
 incat_source <- function(token, id = NULL){
   if(is.null(id)){
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_SOURCE/null/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_SOURCE/null/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("source", "source_description")
     s$CODE
   }else{
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_SOURCE/", id, "/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_SOURCE/", id, "/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("source", "source_description")
     s$CODE
@@ -62,12 +62,12 @@ incat_source <- function(token, id = NULL){
 #' @rdname incat_
 incat_notes <- function(token, id = NULL){
   if(is.null(id)){
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_NOTE/null/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_NOTE/null/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("notes", "notes_description")
     s$CODE
   }else{
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_NOTE/", id, "/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_NOTE/", id, "/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("notes", "notes_description")
     s$CODE
@@ -77,12 +77,12 @@ incat_notes <- function(token, id = NULL){
 #' @rdname incat_
 incat_topic <- function(token, id = NULL){
   if(is.null(id)){
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_TOPIC/null/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_TOPIC/null/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("topic_description", "topic")
     s$CODE
   }else{
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_TOPIC/", id, "/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_TOPIC/", id, "/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("topic_description", "topic")
     s$CODE
@@ -92,12 +92,12 @@ incat_topic <- function(token, id = NULL){
 #' @rdname incat_
 incat_indicator <- function(token, id = NULL){
   if(is.null(id)){
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_INDICATOR/null/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_INDICATOR/null/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("indicator", "indicator_description")
     s$CODE
   }else{
-    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_INDICATOR/", id, "/en/BIE/2.0/", token, "?type=json")
+    u <- paste0("https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml/CL_INDICATOR/", id, "/en/BIE-BISE/2.0/", token, "?type=json")
     s <- jsonlite::fromJSON(u)
     names(s$CODE) <- c("indicator", "indicator_description")
     s$CODE

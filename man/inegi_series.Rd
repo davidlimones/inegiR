@@ -4,7 +4,7 @@
 \alias{inegi_series}
 \title{Returns INEGI data series}
 \usage{
-inegi_series(series_id, token, geography = "00", database = "BIE",
+inegi_series(series_id, token, geography = "00", database = "BIE-BISE",
   metadata = FALSE, lastonly = FALSE, as_tt = FALSE,
   as_compact = FALSE)
 }
@@ -15,7 +15,7 @@ inegi_series(series_id, token, geography = "00", database = "BIE",
 
 \item{geography}{Geography code of INEGI. Defaults to 00 (National)}
 
-\item{database}{Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores)? Defaults to BIE. To learn more about what database your indicator is stored in, visit INEGI docs.}
+\item{database}{Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores)? Defaults to BIE-BISE (the value INEGI's query builder generates; plain "BIE" no longer returns data for most series). To learn more about what database your indicator is stored in, visit INEGI docs.}
 
 \item{metadata}{Defaults to FALSE, if TRUE, returns a list with metadata information.}
 
