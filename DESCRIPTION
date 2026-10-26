@@ -18,4 +18,6 @@ Imports:
     lubridate,
     tibbletime
 Language: es
+Suggests:
+    readxl
 RoxygenNote: 6.1.1
