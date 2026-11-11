@@ -5,7 +5,7 @@
 #' @param series_id an indicator ID. These are obtained via the INEGI API documentation.
 #' @param token API token supplied by INEGI.
 #' @param geography Geography code of INEGI. Defaults to 00 (National)
-#' @param database Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores)? Defaults to BIE. To learn more about what database your indicator is stored in, visit INEGI docs.
+#' @param database Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores)? Defaults to BIE-BISE (the value INEGI's query builder generates; plain "BIE" no longer returns data for most series). To learn more about what database your indicator is stored in, visit INEGI docs.
 #' @param metadata Defaults to FALSE, if TRUE, returns a list with metadata information.
 #' @param lastonly Do you want only the last observation? Defaults to FALSE.
 #' @param as_tt Do you want the output of the data.frame to be a tibble time object? Defaults to FALSE.
@@ -34,7 +34,7 @@ NULL
 
 #' @export
 #' @rdname inegi_series
-inegi_series <- function (series_id, token, geography = "00", database = "BIE",
+inegi_series <- function (series_id, token, geography = "00", database = "BIE-BISE",
                           metadata = FALSE, lastonly = FALSE, as_tt = FALSE, as_compact = FALSE)
 {
   #### stoping mistakes from previous version breaks
@@ -151,7 +151,7 @@ inegi_series <- function (series_id, token, geography = "00", database = "BIE",
 #' @param token API token supplied by INEGI.
 #' @param names Optional vector of names to assign to each id. If NULL, a numerical index is assigned.
 #' @param geography Geography code of INEGI. Defaults to 00 (National)
-#' @param database Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores). Defaults to BIE. To learn more about what database your indicator is stored in, visit INEGI docs.
+#' @param database Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores). Defaults to BIE-BISE (the value INEGI's query builder generates; plain "BIE" no longer returns data for most series). To learn more about what database your indicator is stored in, visit INEGI docs.
 #' 
 #' 
 #' @note Adding the entire INEGI URL as a series is deprecated since v3, due to a change of API specifications in INEGI. INEGI docs can be found at: \url{https://www.inegi.org.mx/servicios/api_indicadores.html}. Coercing biweekly indicators to monthly is also deprecated inside this function. Use tibbletime functions to coerce instead.
@@ -177,7 +177,7 @@ NULL
 
 #' @export
 #' @rdname inegi_series_multiple
-inegi_series_multiple <- function(series_id, token, names = NULL, geography = "00", database = "BIE"){
+inegi_series_multiple <- function(series_id, token, names = NULL, geography = "00", database = "BIE-BISE"){
   if(is.null(names)){
     index <- 1:length(series_id)
   }else{

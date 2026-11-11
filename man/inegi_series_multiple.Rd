@@ -5,7 +5,7 @@
 \title{Returns multiple INEGI data series}
 \usage{
 inegi_series_multiple(series_id, token, names = NULL, geography = "00",
-  database = "BIE")
+  database = "BIE-BISE")
 }
 \arguments{
 \item{series_id}{A vector of indicator ID's. These are obtained via the INEGI API documentation.}
@@ -16,7 +16,7 @@ inegi_series_multiple(series_id, token, names = NULL, geography = "00",
 
 \item{geography}{Geography code of INEGI. Defaults to 00 (National)}
 
-\item{database}{Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores). Defaults to BIE. To learn more about what database your indicator is stored in, visit INEGI docs.}
+\item{database}{Is the id from BIE (Banco de Informacion Economica) or BISE (Banco de Indicadores). Defaults to BIE-BISE (the value INEGI's query builder generates; plain "BIE" no longer returns data for most series). To learn more about what database your indicator is stored in, visit INEGI docs.}
 }
 \value{
 data.frame
